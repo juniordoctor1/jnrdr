@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JnrDr Supabase Test</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  padding:20px;
+}
+.box{
+  max-width:450px;
+  margin:30px auto;
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 2px 10px #0002;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  box-sizing:border-box;
+  border-radius:8px;
+}
+input{
+  border:1px solid #ccc;
+}
+button{
+  border:0;
+  background:#111827;
+  color:white;
+  font-weight:bold;
+}
+#result{
+  margin-top:15px;
+  padding:12px;
+  border-radius:8px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.success{
+  background:#dcfce7;
+  color:#166534;
+}
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🔧 JnrDr Supabase Test</h2>
+
+<p>This page tests the Supabase connection directly.</p>
+
+<input
+  id="email"
+  type="email"
+  placeholder="Enter a NEW email"
+>
+
+<input
+  id="password"
+  type="password"
+  placeholder="Password (minimum 6 characters)"
+>
+
+<button onclick="createAccount()">
+Create Test Account
+</button>
+
+<button onclick="signIn()">
+Test Sign In
+</button>
+
+<button onclick="forgotPassword()">
+Test Forgot Password
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://hnuahwopdyaaicsunnrw.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_AC-rZt3SChxDJLeARO_aLg_z9c7dr8m";
+
+
+function show(message, success=false){
+
+const box=document.getElementById("result");
+
+box.className=success ? "success" : "error";
+
+box.textContent=message;
+
+}
+
+
+function credentials(){
+
+return {
+
+email:
+document.getElementById("email").value.trim(),
+
+password:
+document.getElementById("password").value
+
+};
+
+}
+
+
+/* CREATE ACCOUNT */
+
+async function createAccount(){
+
+const {email,password}=credentials();
+
+if(!email){
+
+show("Please enter an email.");
+
+return;
+
+}
+
+if(password.length < 6){
+
+show("Password must contain at least 6 characters.");
+
+return;
+
+}
+
+show("Creating account...");
+
+try{
+
+const response=await fetch(
+SUPABASE_URL + "/auth/v1/signup",
+{
+method:"POST",
+
+headers:{
+"apikey":SUPABASE_KEY,
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email:email,
+password:password
+})
+
+}
+);
+
+const text=await response.text();
+
+let data;
+
+try{
+data=JSON.parse(text);
+}catch{
+data=text;
+}
+
+if(!response.ok){
+
+show(
+"SUPABASE ERROR\n\n"+
+"HTTP: "+response.status+
+"\n\n"+
+JSON.stringify(data,null,2)
+);
+
+return;
+
+}
+
+show(
+"SUCCESS!\n\n"+
+JSON.stringify(data,null,2),
+true
+);
+
+}catch(error){
+
+show(
+"JAVASCRIPT / NETWORK ERROR\n\n"+
+error.message
+);
+
+}
+
+}
+
+
+/* SIGN IN */
+
+async function signIn(){
+
+const {email,password}=credentials();
+
+if(!email || !password){
+
+show("Enter your email and password.");
+
+return;
+
+}
+
+show("Signing in...");
+
+try{
+
+const response=await fetch(
+SUPABASE_URL + "/auth/v1/token?grant_type=password",
+{
+method:"POST",
+
+headers:{
+"apikey":SUPABASE_KEY,
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email:email,
+password:password
+})
+
+}
+);
+
+const text=await response.text();
+
+let data;
+
+try{
+data=JSON.parse(text);
+}catch{
+data=text;
+}
+
+if(!response.ok){
+
+show(
+"SUPABASE SIGN-IN ERROR\n\n"+
+"HTTP: "+response.status+
+"\n\n"+
+JSON.stringify(data,null,2)
+);
+
+return;
+
+}
+
+show(
+"SIGN IN SUCCESSFUL!\n\n"+
+"User ID: "+
+(data.user?.id || "Not returned"),
+true
+);
+
+}catch(error){
+
+show(
+"NETWORK ERROR\n\n"+
+error.message
+);
+
+}
+
+}
+
+
+/* FORGOT PASSWORD */
+
+async function forgotPassword(){
+
+const email=
+document.getElementById("email").value.trim();
+
+if(!email){
+
+show("Enter your email first.");
+
+return;
+
+}
+
+show("Sending password reset request...");
+
+try{
+
+const response=await fetch(
+SUPABASE_URL + "/auth/v1/recover",
+{
+method:"POST",
+
+headers:{
+"apikey":SUPABASE_KEY,
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email:email
+})
+
+}
+);
+
+const text=await response.text();
+
+if(!response.ok){
+
+show(
+"SUPABASE RESET ERROR\n\n"+
+"HTTP: "+response.status+
+"\n\n"+
+text
+);
+
+return;
+
+}
+
+show(
+"RESET REQUEST SUCCESSFUL.\n\n"+
+"Check the email inbox for the reset message.",
+true
+);
+
+}catch(error){
+
+show(
+"NETWORK ERROR\n\n"+
+error.message
+);
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
