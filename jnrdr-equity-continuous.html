@@ -1,0 +1,537 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JnrDr Trading Journal</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f4f6f8;color:#17202a}header{background:#111827;color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}.wrap{max-width:1100px;margin:auto;padding:16px}button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600}.primary{background:#111827;color:#fff}.danger{background:#fee2e2;color:#991b1b}.edit{background:#e5e7eb}.panel,.card{background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 1px 5px #0001}.auth{max-width:430px;margin:45px auto}.auth h1{text-align:center}input,select,textarea{width:100%;margin-top:6px;padding:11px;border:1px solid #d1d5db;border-radius:8px}textarea{min-height:90px}label{font-size:13px;font-weight:600;display:block;margin-bottom:10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}nav{display:flex;gap:7px;overflow:auto;margin-bottom:16px}.navbtn{background:#fff;color:#374151;white-space:nowrap}.navbtn.active{background:#111827;color:#fff}.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.label{font-size:12px;color:#6b7280}.value{font-size:23px;font-weight:700;margin-top:5px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}.tablewrap{overflow:auto}.pill{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:bold}.win{background:#dcfce7;color:#166534}.loss{background:#fee2e2;color:#991b1b}.be{background:#e5e7eb;color:#374151}.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.rule,.lesson,.shot{border:1px solid #e5e7eb;padding:12px;border-radius:9px;margin-bottom:9px}.shot img{max-width:100%;max-height:360px;border-radius:8px;margin-top:8px}.hidden{display:none!important}.error{color:#991b1b;background:#fef2f2;padding:10px;border-radius:8px;margin:10px 0}.success{color:#166534;background:#f0fdf4;padding:10px;border-radius:8px;margin:10px 0}.tradeShotBtn{background:#e0f2fe;color:#075985}.shotMeta{font-size:12px;color:#6b7280;margin-top:5px}.shotGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.shotCard{border:1px solid #e5e7eb;border-radius:10px;padding:10px}.shotCard img{width:100%;max-height:300px;object-fit:contain;background:#f8fafc;border-radius:8px}.emptyState{padding:18px;text-align:center;color:#6b7280}.deposit{background:#dcfce7;color:#166534}.withdrawal{background:#fee2e2;color:#991b1b}.dashboardHero{background:linear-gradient(135deg,#111827,#263449);color:#fff;border-radius:16px;padding:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:14px}.heroLeft{display:flex;align-items:center;gap:14px}.avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;background:#e5e7eb}.heroTitle{font-size:21px;font-weight:800}.heroSub{font-size:13px;opacity:.78;margin-top:4px}.topTools{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.topTools button{background:#fff;color:#111827;padding:8px 10px}.curveTools{display:flex;gap:8px;justify-content:flex-end;margin-bottom:10px;flex-wrap:wrap}.curveTools button.active{background:#111827;color:#fff}.excelView{display:none}.excelView.active{display:block}.chartView.hidden{display:none!important} </style></head><body>
+<div id="authView" class="auth panel"><h1>📈 JnrDr Trading Journal</h1><p style="text-align:center;color:#6b7280">Your private trading journal</p><div id="authMsg"></div><div id="loginBox"><label>Email<input id="email" type="email" autocomplete="email"></label><label>Password<input id="password" type="password" autocomplete="current-password"></label><div class="actions"><button id="signInBtn" class="primary" onclick="signIn()">Sign In</button><button id="signUpBtn" onclick="signUp()">Create Account</button></div><p><a href="#" onclick="showForgot();return false">Forgot password?</a></p></div><div id="forgotBox" class="hidden"><h3>Forgot Password</h3><label>Email<input id="forgotEmail" type="email"></label><div class="actions"><button id="resetBtn" class="primary" onclick="sendReset()">Send Reset Email</button><button onclick="showLogin()">Back</button></div></div></div>
+<div id="appView" class="hidden"><header><b>📈 JnrDr Trading Journal</b><div class="topTools"><button onclick="appBack()">← Back</button><button onclick="appUndo()">↶ Undo</button><button onclick="appRedo()">↷ Redo</button><span id="userEmail"></span> <button onclick="signOut()">Sign Out</button></div></header><div class="wrap"><nav><button class="navbtn active" data-page="dashboard">🏠 Dashboard</button><button class="navbtn" data-page="add">➕ Add Trade</button><button class="navbtn" data-page="journal">📖 Journal</button><button class="navbtn" data-page="equityCurve">📈 Equity Curve</button><button class="navbtn" data-page="screenshots">📸 Screenshots</button><button class="navbtn" data-page="transactions">💰 Transactions</button><button class="navbtn" data-page="rules">📋 Rules</button><button class="navbtn" data-page="lessons">🧠 Lessons</button><button class="navbtn" data-page="account">👤 Account</button></nav>
+<section id="dashboard" class="page active"><div class="dashboardHero"><div class="heroLeft"><img id="dashboardAvatar" class="avatar" alt="Profile picture"><div><div class="heroTitle">Welcome back, <span id="dashName">Trader</span> 👋</div><div class="heroSub">Your trading performance at a glance</div></div></div><div class="topTools"><button onclick="navigateTo('account')">📷 Profile</button></div></div><div class="cards"><div class="card"><div class="label">Current Balance</div><div class="value" id="balance">$0.00</div></div><div class="card"><div class="label">Total Trades</div><div class="value" id="tradeCount">0</div></div><div class="card"><div class="label">Win Rate</div><div class="value" id="winrate">0%</div></div><div class="card"><div class="label">Profit Factor</div><div class="value" id="pf">0.00</div></div><div class="card"><div class="label">Total R</div><div class="value" id="totalr">0.00R</div></div><div class="card"><div class="label">Average R</div><div class="value" id="avgr">0.00R</div></div></div>
+<div class="panel">
+<h3>💰 Monthly Account Settings</h3>
+<p style="color:#6b7280;font-size:13px">
+Enter the actual balance you are starting each month with. Your monthly ending balance is then calculated from that starting balance and the trades recorded for that month.
+</p>
+<div class="grid">
+<label>Month
+<input type="month" id="monthSetting">
+</label>
+<label>Starting Balance ($)
+<input type="number" step="0.01" id="monthStart">
+</label>
+<label>Default Risk %
+<input type="number" step="0.01" id="monthRisk" placeholder="e.g. 1">
+</label>
+</div>
+<div class="actions">
+<button class="primary" onclick="saveMonthlySetting()">Save Monthly Setting</button>
+<button onclick="loadMonthlySettingForm()">Load Selected Month</button>
+</div>
+<div id="monthlyMsg"></div>
+<div id="monthlySummary" style="margin-top:14px"></div>
+</div>
+<div class="panel"><p style="color:#6b7280;font-size:13px">Balance is calculated month-by-month. Each month uses the starting balance you enter in Monthly Account Settings. Deposits/withdrawals change the actual balance, and each trade risks the current balance using that trade’s risk % and R.</p><span id="summary" style="color:#6b7280">No trades recorded yet.</span><div class="actions" style="margin-top:14px"><button class="primary" onclick="document.querySelector('[data-page=equityCurve]').click()">📈 Open Equity Curve</button></div></div></section>
+<section id="add" class="page"><div class="panel"><h2 id="tradeFormTitle">Add Trade</h2><p style="color:#6b7280;font-size:13px">Enter the exact broker profit or loss in <b>Outcome</b>. JnrDr calculates the R automatically from the current balance and that trade’s risk %.</p><form id="tradeForm"><div class="grid"><label>Date<input type="date" id="date" required></label><label>Pair / Market<input id="pair" required placeholder="EURUSD"></label><label>Direction<select id="direction"><option>Buy</option><option>Sell</option></select></label><label>Timeframe<select id="tf"><option>4H</option><option>1H</option><option>15M</option><option>5M</option><option>1M</option></select></label><label>Entry Price<input type="number" step="any" id="entry"></label><label>Stop Loss<input type="number" step="any" id="sl"></label><label>Take Profit<input type="number" step="any" id="tp"></label><label>Risk %<input type="number" step="0.01" id="risk" placeholder="Uses monthly risk if left blank"></label><label>Setup<select id="setup"><option>A+</option><option>A</option><option>B</option><option>C</option></select></label><label>POI<select id="poi"><option>Demand</option><option>Supply</option><option>FVG</option><option>Other</option></select></label><label>Outcome ($)<input type="number" step="0.01" id="outcome" required placeholder="Exact profit or loss, e.g. 12.47 or -8.35"></label><label>Result<select id="result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></label><label>Calculated R<input type="number" step="0.0001" id="r" readonly placeholder="Calculated automatically"></label></div><label>Trade Comment<textarea id="comment"></textarea></label><div class="actions"><button class="primary">Save Trade</button><button type="button" id="cancelEditBtn" class="hidden" onclick="cancelEdit()">Cancel Edit</button><button type="reset">Clear</button></div></form></div></section>
+<section id="journal" class="page"><div class="panel"><h2>Trade Journal</h2><div class="grid"><label>Filter Pair<input id="filterPair"></label><label>Filter Result<select id="filterResult"><option value="">All</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></label></div></div><div class="panel tablewrap"><table><thead><tr><th>#</th><th>Date</th><th>Pair</th><th>Dir.</th><th>Setup</th><th>POI</th><th>Result</th><th>Outcome</th><th>R</th><th>Comment</th><th>📸</th><th>Action</th></tr></thead><tbody id="tradeRows"></tbody></table></div></section>
+<section id="equityCurve" class="page"><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2 style="margin:0">📈 Equity Curve</h2><p style="color:#6b7280;font-size:13px;margin:6px 0 0">Track your account balance chronologically. Use Chart for the visual curve or Excel View for exact balance-by-balance inspection.</p></div><div class="curveTools"><button id="curveChartBtn" class="active" onclick="showCurveView('chart')">📈 Chart</button><button id="curveExcelBtn" onclick="showCurveView('excel')">📊 Excel View</button></div></div><div id="chartView" class="chartView"><canvas id="equity"></canvas></div><div id="excelView" class="excelView"><div class="tablewrap"><table><thead><tr><th>#</th><th>Date/Event</th><th>Month</th><th>Balance</th></tr></thead><tbody id="equityRows"></tbody></table></div></div></div><div class="panel"><h3>How the curve is calculated</h3><p style="color:#6b7280;font-size:13px">Each month starts from the balance you enter in Monthly Account Settings. Deposits and withdrawals are applied separately. Each trade then changes the running balance using its exact Outcome and calculated R.</p></div></section>
+<section id="screenshots" class="page"><div class="panel"><h2>📸 Trade Screenshots</h2><p id="selectedTradeInfo" style="color:#6b7280">Select a trade from the Journal to view or add its screenshots.</p><div class="actions"><button onclick="backToJournal()">← Back to Journal</button></div></div><div class="panel"><label>Add Screenshot<input id="shotFile" type="file" accept="image/*"></label><div class="actions"><button class="primary" onclick="uploadShot()">Upload Screenshot</button></div><div id="shotMsg"></div></div><div class="panel"><h3 id="shotsTitle">Screenshots for this trade</h3><div id="shotsList"></div></div></section>
+
+<section id="transactions" class="page">
+<div class="panel">
+<h2>💰 Account Transactions</h2>
+<p style="color:#6b7280;font-size:13px">
+Record money that enters or leaves your trading account. Deposits and withdrawals are kept separate from trading profit/loss.
+</p>
+<form id="transactionForm">
+<div class="grid">
+<label>Date
+<input type="date" id="txDate" required>
+</label>
+<label>Type
+<select id="txType">
+<option value="deposit">Deposit / Top-up</option>
+<option value="withdrawal">Withdrawal</option>
+</select>
+</label>
+<label>Amount ($)
+<input type="number" step="0.01" min="0.01" id="txAmount" required>
+</label>
+<label>Note
+<input id="txNote" placeholder="e.g. Added money to account">
+</label>
+</div>
+<div class="actions">
+<button class="primary" type="submit" id="txSaveBtn">Save Transaction</button>
+<button type="button" class="hidden" id="txCancelBtn" onclick="cancelTxEdit()">Cancel Edit</button>
+</div>
+</form>
+<div id="txMsg"></div>
+</div>
+
+<div class="panel">
+<h3>Transaction History</h3>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th><th>Action</th></tr></thead>
+<tbody id="txRows"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section id="rules" class="page"><div class="panel"><h2>📋 My Trading Rules</h2><div id="rulesList"></div><div class="grid"><label>Category<select id="ruleCat"><option>Market Structure</option><option>POI</option><option>Entry</option><option>Risk</option><option>Psychology</option></select></label><label>Rule<textarea id="ruleText"></textarea></label></div><div class="actions"><button class="primary" id="ruleSaveBtn" onclick="saveRule()">Add Rule</button><button id="ruleCancelBtn" class="hidden" onclick="cancelRuleEdit()">Cancel</button></div></div></section>
+<section id="lessons" class="page"><div class="panel"><h2>🧠 Lessons Learned</h2><div class="grid"><label>Date<input type="date" id="lessonDate"></label><label>Observation<textarea id="lessonObs"></textarea></label><label>Action / Lesson<textarea id="lessonAction"></textarea></label></div><div class="actions"><button class="primary" id="lessonSaveBtn" onclick="saveLesson()">Save Lesson</button><button id="lessonCancelBtn" class="hidden" onclick="cancelLessonEdit()">Cancel</button></div><div id="lessonsList"></div></div></section>
+<section id="account" class="page"><div class="panel"><h2>👤 Account</h2><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px"><img id="accountAvatar" class="avatar" alt="Profile picture"><div><h3 style="margin:0 0 6px">Profile Picture</h3><p style="margin:0 0 8px;color:#6b7280;font-size:13px">Use a clear passport-style photo. It will appear on the Dashboard.</p><input id="avatarFile" type="file" accept="image/*"><div class="actions"><button class="primary" onclick="saveAvatar()">Upload Picture</button><button class="danger" onclick="removeAvatar()">Remove</button></div><div id="avatarMsg"></div></div></div><p><b>Email:</b> <span id="accountEmail"></span></p><h3>Change Password</h3><label>New Password<input id="newPassword" type="password"></label><label>Confirm New Password<input id="confirmPassword" type="password"></label><div id="passwordMsg"></div><button class="primary" onclick="changePassword()">Change Password</button></div></section>
+</div></div>
+<script>
+const URL='https://hnuahwopdyaaicsunnrw.supabase.co',KEY='sb_publishable_AC-rZt3SChxDJLeARO_aLg_z9c7dr8m',START=208,SK='jnrdr_session';let S=null,trades=[],rules=[],lessons=[],monthlySettings=[],transactions=[],chart=null,editTradeId=null,editRuleId=null,editLessonId=null,editTxId=null;let navHistory=['dashboard'],navIndex=0,navLock=false;const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));function msg(id,t,type='error'){ $(id).innerHTML='<div class="'+type+'">'+esc(t)+'</div>' }function hdr(token=S?.access_token){let h={apikey:KEY,'Content-Type':'application/json'};if(token)h.Authorization='Bearer '+token;return h}async function api(path,opt={}){let r=await fetch(URL+path,{...opt,headers:{...hdr(),...(opt.headers||{})}}),tx=await r.text(),d;try{d=tx?JSON.parse(tx):null}catch{d=tx}if(!r.ok)throw Error(d?.msg||d?.message||d?.error_description||d?.error||tx||('HTTP '+r.status));return d}
+function save(s){S=s;if(s)localStorage.setItem(SK,JSON.stringify(s));else localStorage.removeItem(SK)}function showAuth(){$('authView').classList.remove('hidden');$('appView').classList.add('hidden')}function showApp(){$('authView').classList.add('hidden');$('appView').classList.remove('hidden');const email=S?.user?.email||'';$('userEmail').textContent=email;$('accountEmail').textContent=email;$('dashName').textContent=(email.split('@')[0]||'Trader').replace(/[._-]+/g,' ');navHistory=['dashboard'];navIndex=0;history.replaceState({jnrdrPage:'dashboard'},'',location.pathname+'#dashboard');loadAvatar()}
+async function signUp(){let email=$('email').value.trim(),password=$('password').value;if(!email)return msg('authMsg','Please enter your email.');if(password.length<6)return msg('authMsg','Password should be at least 6 characters.');let b=$('signUpBtn');b.disabled=true;b.textContent='Creating Account...';try{let d=await api('/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});if(d?.access_token){save(d);showApp();await loadAll();msg('authMsg','Account created successfully.','success')}else msg('authMsg','Account created. Please check your email to confirm your account.','success')}catch(e){msg('authMsg',e.message)}finally{b.disabled=false;b.textContent='Create Account'}}
+async function signIn(){let email=$('email').value.trim(),password=$('password').value;if(!email||!password)return msg('authMsg','Enter your email and password.');let b=$('signInBtn');b.disabled=true;b.textContent='Signing In...';try{let d=await api('/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});save(d);showApp();await loadAll()}catch(e){msg('authMsg',e.message)}finally{b.disabled=false;b.textContent='Sign In'}}
+function showForgot(){$('loginBox').classList.add('hidden');$('forgotBox').classList.remove('hidden');$('forgotEmail').value=$('email').value}function showLogin(){$('forgotBox').classList.add('hidden');$('loginBox').classList.remove('hidden')}async function sendReset(){let email=$('forgotEmail').value.trim();if(!email)return msg('authMsg','Enter your email.');let b=$('resetBtn');b.disabled=true;b.textContent='Sending...';try{await api('/auth/v1/recover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,redirect_to:location.origin+location.pathname})});showLogin();msg('authMsg','Password reset email sent. Check your inbox.','success')}catch(e){msg('authMsg',e.message)}finally{b.disabled=false;b.textContent='Send Reset Email'}}async function changePassword(){let p=$('newPassword').value,c=$('confirmPassword').value;if(p.length<6)return msg('passwordMsg','Password must be at least 6 characters.');if(p!==c)return msg('passwordMsg','Passwords do not match.');try{await api('/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})});$('newPassword').value='';$('confirmPassword').value='';msg('passwordMsg','Password changed successfully.','success')}catch(e){msg('passwordMsg',e.message)}}async function signOut(){save(null);location.reload()}async function refreshSession(){if(!S?.refresh_token)return false;try{const d=await api('/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.refresh_token})});if(d?.access_token){save(d);return true}}catch(e){console.warn('Session refresh failed',e)}return false}async function ensureSession(){if(!S?.access_token)return false;try{const u=await api('/auth/v1/user');S.user=u;save(S);return true}catch(e){return await refreshSession()}}
+async function recovery(){let h=new URLSearchParams(location.hash.slice(1));if(h.get('type')!=='recovery'||!h.get('access_token'))return false;let token=h.get('access_token');try{let u=await api('/auth/v1/user',{headers:{Authorization:'Bearer '+token}});save({access_token:token,refresh_token:h.get('refresh_token')||'',user:u});history.replaceState({},'',location.pathname);showApp();await loadAll();document.querySelector('[data-page=account]').click();msg('passwordMsg','Enter your new password below.','success');return true}catch(e){msg('authMsg',e.message);return true}}
+
+async function navigateTo(page,fromPop=false){const btn=document.querySelector('[data-page="'+page+'"]');if(!btn)return;document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');if(page==='screenshots')await loadShots();if(page==='equityCurve'){draw();showCurveView('chart');}if(!fromPop&&!navLock){navHistory=navHistory.slice(0,navIndex+1);if(navHistory[navIndex]!==page){navHistory.push(page);navIndex=navHistory.length-1}history.pushState({jnrdrPage:page},'',location.pathname+'#'+page)}window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>navigateTo(b.dataset.page));function appBack(){if(navIndex>0){navIndex--;navigateTo(navHistory[navIndex],true)}else{navigateTo('dashboard',true)}}function appUndo(){appBack()}function appRedo(){if(navIndex<navHistory.length-1){navIndex++;navigateTo(navHistory[navIndex],true)}}window.addEventListener('popstate',e=>{if(!S)return;const page=e.state?.jnrdrPage;if(page){navLock=true;const i=navHistory.indexOf(page);if(i>=0)navIndex=i;navigateTo(page,true);navLock=false}else{history.pushState({jnrdrPage:navHistory[navIndex]||'dashboard'},'',location.pathname+'#'+(navHistory[navIndex]||'dashboard'))}});window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(p&&$(p)){navLock=true;navigateTo(p,true);navLock=false}});function n(id){let v=$(id).value;return v===''?null:Number(v)}
+$('tradeForm').onsubmit=async e=>{
+  e.preventDefault();
+  const date=$('date').value;
+  const outcome=n('outcome');
+  if(outcome===null||!Number.isFinite(outcome)) return alert('Enter the exact profit or loss in Outcome.');
+  const riskPct=Number($('risk').value||((getMonthlySetting(monthKey(date))||{}).risk_percent||0));
+  if(!Number.isFinite(riskPct)||riskPct<=0) return alert('Enter a valid Risk % or set a monthly default risk first.');
+
+  // Calculate the risk amount from the balance immediately before this trade.
+  // This makes R match the exact broker P/L entered by the user.
+  const indexedMonths=allMonths().sort();
+  const tempTrades=trades.filter(t=>t.id!==editTradeId);
+  const originalTrades=trades;
+  trades=tempTrades;
+  const before=monthlyBalanceBeforeTrade(date, editTradeId);
+  trades=originalTrades;
+  const riskAmount=before*(riskPct/100);
+  if(!Number.isFinite(riskAmount)||riskAmount<=0) return alert('Could not calculate the risk amount. Check the monthly starting balance and risk %.');
+
+  const calculatedR=outcome/riskAmount;
+  const result=outcome>0?'Win':outcome<0?'Loss':'Breakeven';
+  $('result').value=result;
+  $('r').value=calculatedR.toFixed(4);
+
+  let row={
+    user_id:S.user.id,
+    trade_date:date,
+    pair:$('pair').value.trim().toUpperCase(),
+    direction:$('direction').value,
+    timeframe:$('tf').value,
+    entry_price:n('entry'),
+    stop_loss:n('sl'),
+    take_profit:n('tp'),
+    risk_percent:riskPct,
+    setup:$('setup').value,
+    poi:$('poi').value,
+    result,
+    outcome_amount:outcome,
+    r_multiple:calculatedR,
+    comment:$('comment').value.trim()
+  };
+  try{
+    if(editTradeId) await api('/rest/v1/journal_trades?id=eq.'+encodeURIComponent(editTradeId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});
+    else await api('/rest/v1/journal_trades',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});
+    let was=!!editTradeId;
+    cancelEdit();
+    await loadTrades();
+    document.querySelector('[data-page=journal]').click();
+    alert(was?'Trade updated successfully.':'Trade saved successfully.');
+  }catch(e){alert(e.message)}
+};
+async function loadAll(){await Promise.all([loadTrades(),loadRules(),loadLessons(),loadMonthlySettings(),loadTransactions(),loadShots()]);loadMonthlySettingForm()}async function loadTrades(){try{trades=await api('/rest/v1/journal_trades?select=*&order=trade_date.asc,created_at.asc')||[];render()}catch(e){console.error(e)}}function monthKey(date){return String(date||'').slice(0,7)}
+function getMonthlySetting(month){return monthlySettings.find(x=>String(x.month_start).slice(0,7)===month)}
+function monthStartBalance(month,indexedMonths){
+  const s=getMonthlySetting(month);
+  if(s && Number.isFinite(Number(s.starting_balance))) return Number(s.starting_balance);
+  // Safe fallback for older months: use the previous month's calculated ending balance.
+  const idx=indexedMonths.indexOf(month);
+  if(idx>0){
+    const prev=monthlyPerformance(indexedMonths[idx-1],indexedMonths);
+    return prev.endingBalance;
+  }
+  return START;
+}
+function monthlyBalanceBeforeTrade(tradeDate,excludeId=null){
+  const month=monthKey(tradeDate);
+  const indexedMonths=allMonths().sort();
+  let balance=monthStartBalance(month,indexedMonths);
+  const edited=excludeId?trades.find(t=>t.id===excludeId):null;
+  const cutoffCreated=edited&&monthKey(edited.trade_date)===month&&monthKey(tradeDate)===month?(edited.created_at||'9999'):'9999';
+  const cutoff=tradeDate+'T'+(cutoffCreated==='9999'?'999999':cutoffCreated.slice(11).replace(/[^0-9:.+-]/g,''));
+  const events=[
+    ...trades.filter(t=>monthKey(t.trade_date)===month && t.id!==excludeId).map(t=>({kind:'trade',date:t.trade_date||'',created:t.created_at||'',item:t})),
+    ...transactions.filter(t=>monthKey(t.transaction_date)===month).map(t=>({kind:'tx',date:t.transaction_date||'',created:t.created_at||'',item:t}))
+  ].sort((a,b)=>(a.date+a.created).localeCompare(b.date+b.created));
+  for(const ev of events){
+    const eventKey=(ev.date||'')+(ev.created||'');
+    const cutoffKey=tradeDate+(cutoffCreated==='9999'?'9999':cutoffCreated);
+    if(eventKey>=cutoffKey) break;
+    if(ev.kind==='tx'){
+      const amount=Number(ev.item.amount||0);
+      balance += ev.item.type==='deposit'?amount:-amount;
+    }else{
+      const t=ev.item;
+      const riskPct=Number(t.risk_percent||0);
+      const riskAmount=balance*(riskPct/100);
+      const outcome=t.outcome_amount!==null&&t.outcome_amount!==undefined&&t.outcome_amount!==''?Number(t.outcome_amount):null;
+      const r=outcome!==null&&Number.isFinite(outcome)&&riskAmount>0?outcome/riskAmount:Number(t.r_multiple||0);
+      balance += outcome!==null&&Number.isFinite(outcome)?outcome:riskAmount*r;
+    }
+  }
+  return balance;
+}
+
+function monthlyPerformance(month,indexedMonths){
+  const monthTrades=trades.filter(t=>monthKey(t.trade_date)===month).slice().sort((a,b)=>{
+    const ad=(a.trade_date||'')+(a.created_at||''),bd=(b.trade_date||'')+(b.created_at||'');
+    return ad.localeCompare(bd);
+  });
+  const monthTx=transactions.filter(t=>monthKey(t.transaction_date)===month).slice().sort((a,b)=>{
+    const ad=(a.transaction_date||'')+(a.created_at||''),bd=(b.transaction_date||'')+(b.created_at||'');
+    return ad.localeCompare(bd);
+  });
+
+  let balance=monthStartBalance(month,indexedMonths);
+  const start=balance;
+  let totalR=0,wins=0,losses=0,deposits=0,withdrawals=0;
+  const points=[{label:month+' start',balance}];
+
+  const events=[
+    ...monthTrades.map(t=>({kind:'trade',date:t.trade_date||'',created:t.created_at||'',item:t})),
+    ...monthTx.map(t=>({kind:'tx',date:t.transaction_date||'',created:t.created_at||'',item:t}))
+  ].sort((a,b)=>(a.date+a.created).localeCompare(b.date+b.created));
+
+  let tradeNo=0;
+  events.forEach(ev=>{
+    if(ev.kind==='tx'){
+      const amount=Number(ev.item.amount||0);
+      if(ev.item.type==='deposit'){
+        balance+=amount;
+        deposits+=amount;
+      }else{
+        balance-=amount;
+        withdrawals+=amount;
+      }
+      points.push({label:(ev.item.type==='deposit'?'Deposit':'Withdrawal'),balance});
+      return;
+    }
+
+    const t=ev.item;
+    tradeNo++;
+    const riskPct=Number(t.risk_percent||0);
+    const outcome=t.outcome_amount!==null&&t.outcome_amount!==undefined&&t.outcome_amount!==''?Number(t.outcome_amount):null;
+    const riskAmount=balance*(riskPct/100);
+    const r=outcome!==null&&Number.isFinite(outcome)&&riskAmount>0?outcome/riskAmount:Number(t.r_multiple||0);
+    const pnl=outcome!==null&&Number.isFinite(outcome)?outcome:riskAmount*r;
+    balance+=pnl;
+    totalR+=r;
+    if(t.result==='Win')wins++;
+    if(t.result==='Loss')losses++;
+    points.push({label:'#'+tradeNo,balance});
+  });
+
+  return {
+    month,startBalance:start,endingBalance:balance,totalR,wins,losses,
+    trades:monthTrades.length,points,deposits,withdrawals,
+    tradingPnl:balance-start-deposits+withdrawals
+  };
+}
+
+function allMonths(){
+  const set=new Set(trades.map(t=>monthKey(t.trade_date)).filter(Boolean));
+  transactions.forEach(t=>set.add(String(t.transaction_date).slice(0,7)));
+  monthlySettings.forEach(s=>set.add(String(s.month_start).slice(0,7)));
+  const months=[...set].sort();
+  if(!months.length){
+    const now=new Date();
+    months.push(now.toISOString().slice(0,7));
+  }
+  return months;
+}
+function renderMonthlySummary(){
+  const months=allMonths().sort().reverse();
+  $('monthlySummary').innerHTML=months.map(m=>{
+    const p=monthlyPerformance(m,months.slice().sort());
+    const setting=getMonthlySetting(m);
+    const ret=p.startBalance?((p.endingBalance-p.startBalance)/p.startBalance*100):0;
+    const risk=setting&&setting.risk_percent!==null&&setting.risk_percent!==undefined?Number(setting.risk_percent):'—';
+    return `<div class="rule"><b>${esc(m)}</b><div style="margin-top:6px">Start: <b>$${p.startBalance.toFixed(2)}</b> · End: <b>$${p.endingBalance.toFixed(2)}</b> · Return: <b>${ret.toFixed(2)}%</b> · Trades: <b>${p.trades}</b> · R: <b>${p.totalR.toFixed(2)}R</b> · Trading P/L: <b>$${p.tradingPnl.toFixed(2)}</b> · Deposits: <b>$${p.deposits.toFixed(2)}</b> · Withdrawals: <b>$${p.withdrawals.toFixed(2)}</b> · Default risk: <b>${risk==='—'?'—':risk.toFixed(2)+'%'}</b></div></div>`
+  }).join('') || '<p style="color:#6b7280">No monthly data yet.</p>';
+}
+function showCurveView(view){const chartView=$('chartView'),excelView=$('excelView');const cb=$('curveChartBtn'),eb=$('curveExcelBtn');if(view==='excel'){chartView.classList.add('hidden');excelView.classList.add('active');cb.classList.remove('active');eb.classList.add('active');renderEquityTable()}else{chartView.classList.remove('hidden');excelView.classList.remove('active');cb.classList.add('active');eb.classList.remove('active');if(chart)chart.resize()}}function renderEquityTable(){
+  const points=getContinuousEquityData();
+  $('equityRows').innerHTML=points.map((pt,i)=>{
+    const month=String(pt.date||'').slice(0,7);
+    return '<tr><td>'+i+'</td><td>'+esc(pt.date||'')+' · '+esc(pt.label)+'</td><td>'+esc(month)+'</td><td>$'+Number(pt.balance).toFixed(2)+'</td></tr>';
+  }).join('')||'<tr><td colspan="4">No equity data yet.</td></tr>';
+}function render(){
+  const w=trades.filter(t=>t.result==='Win'),l=trades.filter(t=>t.result==='Loss');
+  const r=trades.reduce((s,t)=>s+Number(t.r_multiple||0),0);
+  const gw=w.reduce((s,t)=>s+Math.max(0,Number(t.r_multiple||0)),0);
+  const gl=Math.abs(l.reduce((s,t)=>s+Math.min(0,Number(t.r_multiple||0)),0));
+  const pf=gl?gw/gl:(gw?'∞':'0.00'),avg=trades.length?r/trades.length:0;
+  const months=allMonths().sort();
+  const performances=months.map(m=>monthlyPerformance(m,months));
+  const currentMonth=new Date().toISOString().slice(0,7);
+  const currentPerf=monthlyPerformance(currentMonth,months);
+  const latestMonth=months[months.length-1];
+  const latestPerf=monthlyPerformance(latestMonth,months);
+  const bal=latestMonth===currentMonth?currentPerf.endingBalance:latestPerf.endingBalance;
+
+  $('balance').textContent='$'+bal.toFixed(2);
+  $('tradeCount').textContent=trades.length;
+  $('winrate').textContent=(trades.length?w.length/trades.length*100:0).toFixed(1)+'%';
+  $('pf').textContent=typeof pf==='number'?pf.toFixed(2):pf;
+  $('totalr').textContent=r.toFixed(2)+'R';
+  $('avgr').textContent=avg.toFixed(2)+'R';
+  $('summary').textContent=trades.length?`You have ${w.length} wins, ${l.length} losses and ${trades.filter(t=>t.result==='Breakeven').length} breakeven trades.`:'No trades recorded yet.';
+  renderRows();draw();renderMonthlySummary();
+}
+function renderRows(){
+  let p=($('filterPair').value||'').toUpperCase();
+  let r=$('filterResult').value||'';
+
+  // Always establish trade numbers from the COMPLETE chronological history.
+  // This means editing a trade's date automatically moves its number to the
+  // correct position, and filters never renumber the remaining trades.
+  const chronological=[...trades].sort((a,b)=>{
+    const ad=(a.trade_date||'')+'|'+(a.created_at||'')+'|'+(a.id||'');
+    const bd=(b.trade_date||'')+'|'+(b.created_at||'')+'|'+(b.id||'');
+    return ad.localeCompare(bd);
+  });
+  const numberById=new Map(chronological.map((t,i)=>[t.id,i+1]));
+
+  const rows=chronological.filter(t=>(!p||String(t.pair).toUpperCase().includes(p))&&(!r||t.result===r));
+  $('tradeRows').innerHTML=rows.map(t=>`<tr><td>${numberById.get(t.id)}</td><td>${esc(t.trade_date)}</td><td>${esc(t.pair)}</td><td>${esc(t.direction)}</td><td>${esc(t.setup)}</td><td>${esc(t.poi)}</td><td><span class="pill ${t.result==='Win'?'win':t.result==='Loss'?'loss':'be'}">${esc(t.result)}</span></td><td>${t.outcome_amount!==null&&t.outcome_amount!==undefined&&t.outcome_amount!==''?'$'+Number(t.outcome_amount).toFixed(2):'—'}</td><td>${Number(t.r_multiple||0).toFixed(2)}R</td><td>${esc(String(t.comment||'').slice(0,45))}</td><td><button class="tradeShotBtn" onclick="openTradeShots('${t.id}')">📸 View</button></td><td><button class="edit" onclick="editTrade('${t.id}')">✏️ Edit</button> <button class="danger" onclick="deleteTrade('${t.id}')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="12">No matching trades.</td></tr>';
+  $('filterPair').oninput=renderRows;
+  $('filterResult').onchange=renderRows;
+}
+function editTrade(id){let t=trades.find(x=>x.id===id);if(!t)return;editTradeId=id;$('tradeFormTitle').textContent='Edit Trade';$('date').value=t.trade_date||'';$('pair').value=t.pair||'';$('direction').value=t.direction||'Buy';$('tf').value=t.timeframe||'4H';$('entry').value=t.entry_price??'';$('sl').value=t.stop_loss??'';$('tp').value=t.take_profit??'';$('risk').value=t.risk_percent??'';$('setup').value=t.setup||'A+';$('poi').value=t.poi||'Demand';$('result').value=t.result||'Win';$('outcome').value=t.outcome_amount??'';$('r').value=t.r_multiple??'';$('comment').value=t.comment||'';$('cancelEditBtn').classList.remove('hidden');document.querySelector('[data-page=add]').click()}function cancelEdit(){editTradeId=null;$('tradeForm').reset();$('tradeFormTitle').textContent='Add Trade';$('cancelEditBtn').classList.add('hidden')}async function deleteTrade(id){if(!confirm('Delete this trade?'))return;try{await api('/rest/v1/journal_trades?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{Prefer:'return=minimal'}});await loadTrades()}catch(e){alert(e.message)}}function getContinuousEquityData(){
+  // The equity curve is ONE continuous account curve.
+  // Monthly starting balances/risk settings are used for monthly risk calculations,
+  // but they NEVER reset or restart the equity curve.
+  const months=allMonths().sort();
+  const firstMonth=months[0] || new Date().toISOString().slice(0,7);
+  let balance=monthStartBalance(firstMonth,months);
+  const events=[
+    ...trades.map(t=>({kind:'trade',date:t.trade_date||'',created:t.created_at||'',item:t})),
+    ...transactions.map(t=>({kind:'tx',date:t.transaction_date||'',created:t.created_at||'',item:t}))
+  ].sort((a,b)=>{
+    const ad=(a.date||'')+'|'+(a.created||'')+'|'+(a.item.id||'');
+    const bd=(b.date||'')+'|'+(b.created||'')+'|'+(b.item.id||'');
+    return ad.localeCompare(bd);
+  });
+
+  const points=[{label:'Starting Balance',date:firstMonth+'-01',balance}];
+  let tradeNo=0;
+  for(const ev of events){
+    if(ev.kind==='tx'){
+      const amount=Number(ev.item.amount||0);
+      if(Number.isFinite(amount)){
+        if(ev.item.type==='deposit') balance+=amount;
+        else balance-=amount;
+        points.push({
+          label:(ev.item.type==='deposit'?'Deposit':'Withdrawal'),
+          date:ev.date,
+          balance
+        });
+      }
+      continue;
+    }
+
+    const t=ev.item;
+    tradeNo++;
+    const outcome=t.outcome_amount!==null&&t.outcome_amount!==undefined&&t.outcome_amount!==''
+      ? Number(t.outcome_amount) : null;
+    const pnl=outcome!==null&&Number.isFinite(outcome)
+      ? outcome
+      : Number(t.r_multiple||0) * balance * (Number(t.risk_percent||0)/100);
+    if(Number.isFinite(pnl)) balance+=pnl;
+    points.push({label:'Trade #'+tradeNo,date:t.trade_date||'',balance});
+  }
+  return points;
+}
+
+function draw(){
+  const points=getContinuousEquityData();
+  const labels=points.map(pt=>pt.date+' '+pt.label);
+  const data=points.map(pt=>Number(pt.balance));
+  if(!labels.length){labels=['Start'];data=[START]}
+  if(chart)chart.destroy();
+  if(!$('equity')) return;
+  chart=new Chart($('equity'),{type:'line',data:{labels,datasets:[{label:'Equity ($)',data,tension:.25}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12}}}}});
+  renderEquityTable();
+}
+
+async function loadMonthlySettings(){
+  try{
+    monthlySettings=await api('/rest/v1/monthly_account_settings?select=*&order=month_start.asc')||[];
+  }catch(e){
+    console.error(e);
+    monthlySettings=[];
+  }
+}
+function loadMonthlySettingForm(){
+  const month=$('monthSetting').value || new Date().toISOString().slice(0,7);
+  $('monthSetting').value=month;
+  const s=getMonthlySetting(month);
+  $('monthStart').value=s&&s.starting_balance!==null?s.starting_balance:'';
+  $('monthRisk').value=s&&s.risk_percent!==null?s.risk_percent:'';
+}
+async function saveMonthlySetting(){
+  const month=$('monthSetting').value;
+  const start=Number($('monthStart').value);
+  const risk=$('monthRisk').value===''?null:Number($('monthRisk').value);
+  if(!month){return msg('monthlyMsg','Please select a month.')}
+  if(!Number.isFinite(start)||start<=0){return msg('monthlyMsg','Enter a valid starting balance greater than 0.')}
+  if(risk!==null && (!Number.isFinite(risk)||risk<0)){return msg('monthlyMsg','Enter a valid risk percentage.')}
+  const monthStart=month+'-01';
+  const row={user_id:S.user.id,month_start:monthStart,starting_balance:start,risk_percent:risk};
+  try{
+    const existing=getMonthlySetting(month);
+    if(existing){
+      await api('/rest/v1/monthly_account_settings?user_id=eq.'+encodeURIComponent(S.user.id)+'&month_start=eq.'+encodeURIComponent(monthStart),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({starting_balance:start,risk_percent:risk})});
+    }else{
+      await api('/rest/v1/monthly_account_settings',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});
+    }
+    await loadMonthlySettings();
+    loadMonthlySettingForm();
+    render();
+    msg('monthlyMsg','Monthly setting saved for '+month+'.','success');
+  }catch(e){msg('monthlyMsg',e.message)}
+}
+$('monthSetting').addEventListener('change',loadMonthlySettingForm);
+$('date').addEventListener('change',()=>{
+  const month=monthKey($('date').value);
+  const s=getMonthlySetting(month);
+  if(s && s.risk_percent!==null && s.risk_percent!==undefined && $('risk').value===''){
+    $('risk').value=s.risk_percent;
+  }
+});
+
+async function loadRules(){try{rules=await api('/rest/v1/journal_rules?select=*&order=created_at.asc')||[];$('rulesList').innerHTML=rules.map(r=>`<div class="rule"><b>${esc(r.category)}</b><div>${esc(r.rule_text)}</div><button class="edit" onclick="editRule('${r.id}')">✏️ Edit</button> <button class="danger" onclick="deleteRule('${r.id}')">🗑️ Delete</button></div>`).join('')||'<p>No rules added yet.</p>'}catch(e){console.error(e)}}async function saveRule(){let text=$('ruleText').value.trim();if(!text)return;let row={category:$('ruleCat').value,rule_text:text};try{if(editRuleId)await api('/rest/v1/journal_rules?id=eq.'+encodeURIComponent(editRuleId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});else await api('/rest/v1/journal_rules',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({...row,user_id:S.user.id})});cancelRuleEdit();await loadRules()}catch(e){alert(e.message)}}function editRule(id){let r=rules.find(x=>x.id===id);if(!r)return;editRuleId=id;$('ruleCat').value=r.category;$('ruleText').value=r.rule_text;$('ruleSaveBtn').textContent='Save Rule Changes';$('ruleCancelBtn').classList.remove('hidden')}function cancelRuleEdit(){editRuleId=null;$('ruleText').value='';$('ruleSaveBtn').textContent='Add Rule';$('ruleCancelBtn').classList.add('hidden')}async function deleteRule(id){if(!confirm('Delete this rule?'))return;try{await api('/rest/v1/journal_rules?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{Prefer:'return=minimal'}});await loadRules()}catch(e){alert(e.message)}}
+async function loadLessons(){try{lessons=await api('/rest/v1/journal_lessons?select=*&order=lesson_date.desc,created_at.desc')||[];$('lessonsList').innerHTML=lessons.map(l=>`<div class="lesson"><b>${esc(l.lesson_date)}</b><p><b>Observation:</b> ${esc(l.observation)}</p><p><b>Action/Lesson:</b> ${esc(l.action_lesson||'')}</p><button class="edit" onclick="editLesson('${l.id}')">✏️ Edit</button> <button class="danger" onclick="deleteLesson('${l.id}')">🗑️ Delete</button></div>`).join('')||'<p>No lessons recorded yet.</p>'}catch(e){console.error(e)}}async function saveLesson(){let obs=$('lessonObs').value.trim();if(!obs)return;let row={lesson_date:$('lessonDate').value||new Date().toISOString().slice(0,10),observation:obs,action_lesson:$('lessonAction').value.trim()};try{if(editLessonId)await api('/rest/v1/journal_lessons?id=eq.'+encodeURIComponent(editLessonId),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(row)});else await api('/rest/v1/journal_lessons',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({...row,user_id:S.user.id})});cancelLessonEdit();await loadLessons()}catch(e){alert(e.message)}}function editLesson(id){let l=lessons.find(x=>x.id===id);if(!l)return;editLessonId=id;$('lessonDate').value=l.lesson_date||'';$('lessonObs').value=l.observation||'';$('lessonAction').value=l.action_lesson||'';$('lessonSaveBtn').textContent='Save Lesson Changes';$('lessonCancelBtn').classList.remove('hidden')}function cancelLessonEdit(){editLessonId=null;$('lessonDate').value='';$('lessonObs').value='';$('lessonAction').value='';$('lessonSaveBtn').textContent='Save Lesson';$('lessonCancelBtn').classList.add('hidden')}async function deleteLesson(id){if(!confirm('Delete this lesson?'))return;try{await api('/rest/v1/journal_lessons?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:{Prefer:'return=minimal'}});await loadLessons()}catch(e){alert(e.message)}}
+let selectedTradeId=null;
+function getTradeById(id){return trades.find(t=>t.id===id)}
+function openTradeShots(id){const t=getTradeById(id);if(!t)return;selectedTradeId=id;navigateTo('screenshots');$('selectedTradeInfo').innerHTML='<b>'+esc(t.pair)+' — '+esc(t.trade_date)+'</b> · '+esc(t.direction)+' · '+esc(t.setup)+' · '+esc(t.poi)+' · '+Number(t.r_multiple||0).toFixed(2)+'R'+(t.outcome_amount!==null&&t.outcome_amount!==undefined&&t.outcome_amount!==''?' · $'+Number(t.outcome_amount).toFixed(2):'');$('shotsTitle').textContent='Screenshots — '+t.pair+' · '+t.trade_date;$('shotFile').value='';$('shotMsg').innerHTML='';loadShots();window.scrollTo({top:0,behavior:'smooth'})}
+function backToJournal(){document.querySelector('[data-page="journal"]').click()}
+async function uploadShot(){if(!selectedTradeId)return msg('shotMsg','Please select a trade from the Journal first.');const f=$('shotFile').files[0];if(!f)return msg('shotMsg','Choose an image first.');const t=getTradeById(selectedTradeId);if(!t)return msg('shotMsg','That trade could not be found.');const safeName=f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=`${S.user.id}/${selectedTradeId}/${Date.now()}_${safeName}`;try{const r=await fetch(URL+'/storage/v1/object/trade-screenshots/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+S.access_token,'Content-Type':f.type||'application/octet-stream','x-upsert':'false'},body:f});const text=await r.text();if(!r.ok)throw Error(text);$('shotFile').value='';msg('shotMsg','Screenshot uploaded successfully to '+t.pair+' — '+t.trade_date+'.','success');await loadShots()}catch(e){msg('shotMsg',e.message)}}
+async function loadShots(){if(!S)return;if(!selectedTradeId){$('shotsList').innerHTML='<div class="emptyState">Open a trade from the Journal to see its screenshots.</div>';return}const t=getTradeById(selectedTradeId);if(!t){$('shotsList').innerHTML='<div class="emptyState">Trade not found.</div>';return}try{const prefix=S.user.id+'/'+selectedTradeId,list=await api('/storage/v1/object/list/trade-screenshots',{method:'POST',body:JSON.stringify({prefix,limit:100,sortBy:{column:'created_at',order:'desc'}})})||[],files=list.filter(x=>x.id);if(!files.length){$('shotsList').innerHTML='<div class="emptyState">No screenshots for this trade yet.</div>';return}$('shotsList').innerHTML='<div class="shotGrid">'+files.map(x=>{const path=prefix+'/'+x.name,publicUrl=URL+'/storage/v1/object/public/trade-screenshots/'+path,created=x.created_at?new Date(x.created_at).toLocaleString():'';return `<div class="shotCard"><img src="${publicUrl}" alt="Screenshot for ${esc(t.pair)} on ${esc(t.trade_date)}"><div class="shotMeta">${esc(t.pair)} · ${esc(t.trade_date)}${created?' · '+esc(created):''}</div><div class="actions"><button class="danger" onclick="deleteShot('${encodeURIComponent(path)}')">🗑️ Delete</button></div></div>`}).join('')+'</div>'}catch(e){$('shotsList').innerHTML='<div class="emptyState">'+esc(e.message)+'</div>'}}
+async function deleteShot(encodedPath){
+  if(!confirm('Delete this screenshot?'))return;
+  try{
+    const path=decodeURIComponent(encodedPath);
+    const r=await fetch(URL+'/storage/v1/object/trade-screenshots',{
+      method:'DELETE',
+      headers:{apikey:KEY,Authorization:'Bearer '+S.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({prefixes:[path]})
+    });
+    const text=await r.text();
+    if(!r.ok)throw Error(text);
+    await loadShots();
+    msg('shotMsg','Screenshot deleted successfully.','success');
+  }catch(e){
+    alert('Could not delete screenshot: '+e.message);
+  }
+}
+(function(){if($('txDate'))$('txDate').value=new Date().toISOString().slice(0,10)})();
+(async()=>{let recovered=await recovery();if(recovered)return;try{let raw=localStorage.getItem(SK);if(raw){S=JSON.parse(raw);if(await ensureSession()){showApp();await loadAll();return}}}catch(e){console.warn(e)}save(null);showAuth()})();
+async function loadTransactions(){
+  try{
+    transactions=await api('/rest/v1/account_transactions?select=*&order=transaction_date.desc,created_at.desc')||[];
+    renderTransactions();
+  }catch(e){
+    console.error(e);
+    transactions=[];
+    renderTransactions();
+  }
+}
+
+function renderTransactions(){
+  $('txRows').innerHTML=transactions.map(t=>`
+    <tr>
+      <td>${esc(t.transaction_date||'')}</td>
+      <td><span class="pill ${t.type==='deposit'?'deposit':'withdrawal'}">${t.type==='deposit'?'Deposit':'Withdrawal'}</span></td>
+      <td>${t.type==='deposit'?'+':'-'}$${Number(t.amount||0).toFixed(2)}</td>
+      <td>${esc(t.note||'')}</td>
+      <td>
+        <button class="edit" onclick="editTx('${t.id}')">✏️ Edit</button>
+        <button class="danger" onclick="deleteTx('${t.id}')">🗑️ Delete</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="5">No deposits or withdrawals recorded yet.</td></tr>';
+}
+
+$('transactionForm').onsubmit=async e=>{
+  e.preventDefault();
+  const date=$('txDate').value;
+  const type=$('txType').value;
+  const amount=Number($('txAmount').value);
+  const note=$('txNote').value.trim();
+
+  if(!date)return msg('txMsg','Choose a date.');
+  if(!Number.isFinite(amount)||amount<=0)return msg('txMsg','Enter a valid amount greater than 0.');
+
+  const row={transaction_date:date,type,amount,note};
+
+  try{
+    if(editTxId){
+      await api('/rest/v1/account_transactions?id=eq.'+encodeURIComponent(editTxId),{
+        method:'PATCH',
+        headers:{Prefer:'return=minimal'},
+        body:JSON.stringify(row)
+      });
+    }else{
+      await api('/rest/v1/account_transactions',{
+        method:'POST',
+        headers:{Prefer:'return=minimal'},
+        body:JSON.stringify({...row,user_id:S.user.id})
+      });
+    }
+
+    const was=!!editTxId;
+    cancelTxEdit();
+    await loadTransactions();
+    render();
+    msg('txMsg',was?'Transaction updated successfully.':'Transaction saved successfully.','success');
+  }catch(e){
+    msg('txMsg',e.message);
+  }
+};
+
+function editTx(id){
+  const t=transactions.find(x=>x.id===id);
+  if(!t)return;
+  editTxId=id;
+  $('txDate').value=t.transaction_date||'';
+  $('txType').value=t.type||'deposit';
+  $('txAmount').value=t.amount??'';
+  $('txNote').value=t.note||'';
+  $('txSaveBtn').textContent='Save Transaction Changes';
+  $('txCancelBtn').classList.remove('hidden');
+  document.querySelector('[data-page="transactions"]').click();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelTxEdit(){
+  editTxId=null;
+  $('transactionForm').reset();
+  $('txDate').value=new Date().toISOString().slice(0,10);
+  $('txSaveBtn').textContent='Save Transaction';
+  $('txCancelBtn').classList.add('hidden');
+}
+
+async function deleteTx(id){
+  if(!confirm('Delete this transaction?'))return;
+  try{
+    await api('/rest/v1/account_transactions?id=eq.'+encodeURIComponent(id),{
+      method:'DELETE',
+      headers:{Prefer:'return=minimal'}
+    });
+    await loadTransactions();
+    render();
+  }catch(e){alert(e.message)}
+}
+
+
+function avatarPath(){return S?.user?.id+'/profile.jpg'}function avatarKey(){return 'jnrdr_avatar_'+(S?.user?.id||'guest')}function placeholderAvatar(){return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#e5e7eb"/><circle cx="60" cy="43" r="22" fill="#9ca3af"/><path d="M18 108c5-28 79-28 84 0" fill="#9ca3af"/></svg>')}async function loadAvatar(){const local=localStorage.getItem(avatarKey());['dashboardAvatar','accountAvatar'].forEach(id=>{const el=$(id);if(el)el.src=local||placeholderAvatar()});if(!S?.user?.id)return;try{const path=avatarPath(),publicUrl=URL+'/storage/v1/object/public/profile-avatars/'+path+'?v='+Date.now();const r=await fetch(URL+'/storage/v1/object/info/profile-avatars/'+path,{headers:hdr()});if(r.ok)['dashboardAvatar','accountAvatar'].forEach(id=>{const el=$(id);if(el)el.src=publicUrl})}catch(e){}}async function saveAvatar(){const f=$('avatarFile').files[0];if(!f)return msg('avatarMsg','Choose a picture first.');if(!f.type.startsWith('image/'))return msg('avatarMsg','Please choose an image.');if(f.size>3*1024*1024)return msg('avatarMsg','Please choose an image under 3MB.');try{const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});localStorage.setItem(avatarKey(),dataUrl);['dashboardAvatar','accountAvatar'].forEach(id=>{const el=$(id);if(el)el.src=dataUrl});try{const r=await fetch(URL+'/storage/v1/object/profile-avatars/'+avatarPath(),{method:'POST',headers:{...hdr(),'x-upsert':'true','Content-Type':f.type},body:f});if(!r.ok)console.warn(await r.text())}catch(e){}msg('avatarMsg','Profile picture saved.','success')}catch(e){msg('avatarMsg',e.message)}}async function removeAvatar(){localStorage.removeItem(avatarKey());['dashboardAvatar','accountAvatar'].forEach(id=>{const el=$(id);if(el)el.src=placeholderAvatar()});try{await fetch(URL+'/storage/v1/object/profile-avatars',{method:'DELETE',headers:hdr(),body:JSON.stringify({prefixes:[avatarPath()]})})}catch(e){}msg('avatarMsg','Profile picture removed.','success')}</script></body></html>
